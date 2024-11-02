@@ -1,4 +1,5 @@
 from abc import ABC
+from tabulate import tabulate
 import random
 class namee(ABC):
     def __init__(self,name , email , address,phone) -> None:
@@ -6,6 +7,7 @@ class namee(ABC):
         self.email = email 
         self.address = address
         self.phone = phone
+        
 
 
 class User(namee):
@@ -50,11 +52,15 @@ class User(namee):
             return 
         self.__balance+=Money
         BankName.AvalableBalance = Money  
-        if type == typee:
+        # type = 'c'
+        if 'c' == typee:
             transactionInfo  = f"Transaction Type : Credit\tAmount:{Money}\tBalance After Transaction::{self.__balance}"
             self.Transaction_History_Record.append(transactionInfo) 
+        elif 's' == typee:
+            transactionInfo  = f"Transaction Type : Saving\tAmount:{Money}\tBalance After Transaction::{self.__balance}"
+            self.Transaction_History_Record.append(transactionInfo) 
         else:
-            transactionInfo  = f"Transaction Type : Credit\tAmount:{Money}\tBalance After Transaction::{self.__balance}"
+            transactionInfo  = f"Transaction Type : Receive Taka\tAmount:{Money}\tBalance After Transaction::{self.__balance}"
             self.Transaction_History_Record.append(transactionInfo) 
 
           
@@ -78,7 +84,7 @@ class User(namee):
  
     #6. Can take a loan from the bank at most two times.
     def Loan(self ,BankName, loanAmount ): #take bank object and loan amount
-        if self.TakeLoan <=2 and BankName.LoanActive == True and BankName.AvalableBalance > loanAmount: 
+        if self.TakeLoan <=2 and BankName.LoanActive == True and BankName.AvalableBalance > loanAmount and BankName.MaxLoan >= loanAmount: 
             BankName.TotalLoanAmount =loanAmount #setter mthod use here 
             BankName.AvalableBalance = (loanAmount * -1) 
             # self.__balance+= loanAmount
@@ -98,10 +104,12 @@ class User(namee):
         else:
             if BankName.AvalableBalance < loanAmount:
                 print(f"\t\t\t\t\nThe bank doesn't have that much money.")
-            elif BankName.LoanActive == True:
-                print(f"\t\t\t\t\nYou can loan from the bank at most two time . ")
-            else: 
+            elif BankName.LoanActive == False:
                 print(f"\t\t\t\t\nBank Loan System is now Deactivate....")
+            elif BankName.MaxLoan < loanAmount :
+                print(f"\t\t\t\t\nYou can maximum loan {BankName.MaxLoan} amount Taka")
+            else: 
+                print(f"\t\t\t\t\nYou can loan from the bank at most two time . ")
 
     #7. Can transfer the amount from his account to another user account
     def TransferAmount(self,BankName,ReceiverAccount,TransferAmount):
@@ -111,7 +119,7 @@ class User(namee):
                 return
             self.__balance-=TransferAmount
             ReceiverUserObject = BankName.UserList[ReceiverAccount]
-            d = 'd'
+            d = 'receive'
             ReceiverUserObject.deposite(BankName,TransferAmount,d)
 
             transactionInfo  = f"Transaction Type :TransferTaka\tAmount:{TransferAmount}\tBalance After Transaction::{self.__balance}"
@@ -281,6 +289,7 @@ class Bank:
         self.UserList = {}  
         self.AdminList = []
         self.__bankRupt = False
+        self.MaxLoan = 300000
 
     @property
     def bankRupt(self):
@@ -295,17 +304,35 @@ class Bank:
         self.UserList[UserAccountNumber] = User #save UserList key as AccountNumber and save value as account object
 
     def ViewAllUserAcount(self):
-        print(f"\t\t\t\t\t\t\t***********View All Users Details***********")
+        print(f"View All Users Details")
+        table_data = []
         for value in self.UserList.values():
-            # print(f"Account Number\t\t\t\t\tName\t\t\tEmail\t\t\t\tAddress\t\t\t\t\tPhone Number")
-            # print(f"{value.AcountNumber}\t\t\t{value.name}{value.email}\t\t\t\t{value.address}\t\t\t\t\t{value.phone}")
-            print('Account Number : ', value.AcountNumber)
-            print('Name : ', value.name)
-            print('Email : ',value.email)
-            print('Address : ',value.address)
-            print('Phone Number : ',value.phone)
 
-            print('\n\n')
+            # print('Account Number : ', value.AcountNumber)
+            # print('Name : ', value.name)
+            # print('Email : ',value.email)
+            # print('Address : ',value.address)
+            # print('Phone Number : ',value.phone)
+
+            # print('\n\n')
+            
+
+            # now show table wise 
+            user_details = [
+                
+                value.AcountNumber,
+                value.name,
+                value.email,
+                value.address,
+                value.phone,
+                value.AccountType
+
+            ]
+            table_data.append(user_details)
+
+            # print('\n\n')
+
+        print(tabulate(table_data , headers=["Account Number" , "Name" , "Email" , "Address" , "Phone Number,Account Type"],tablefmt="grid"))
     def Create_An_Admin_Account(self,Adminn):
         self.AdminList.append(self,Adminn)
         # self.AdminList[]
@@ -445,9 +472,25 @@ def AdminMethod():
             email = input("Etner User Email : ")
             address = input("Enter User Address : ")
             Phone = input("Enter User Mobile Number : ")
-            AccountType = input("Enter User AccountType : ")
+            # AccountType = input("Enter User AccountType : ")
+            print(f"choose Current Account Type : ")
+            while True:
+                print(f"\t1.Current Account")
+                print(f"\t2.Savings")
+                accountType = int(input(f"\tChoose option: "))
+                if accountType == 1 :
+                    userAcountObject = User(name ,email , address ,Phone, 'Current')
+                    break
+                elif accountType == 2 : 
+                    amountt = int(input(f"How much amount would you like to save - "))
+                    userAcountObject = User(name ,email , address ,Phone, 'Saving')
+                    userAcountObject.deposite(Laxmi_chit_fund, amountt , 's')
+                    break
+                else : 
+                    print(f"\tchoose correct option")
+                    
+
             print(f"\n\n")
-            userAcountObject = User(name ,email , address ,Phone, AccountType)
             admin_instance.Create_An_User_Accounts(Laxmi_chit_fund,userAcountObject)
         elif option == 2 : 
             AccountNumber = input("Enter User Account Number: ")
