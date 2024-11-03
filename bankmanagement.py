@@ -332,7 +332,7 @@ class Bank:
 
             # print('\n\n')
 
-        print(tabulate(table_data , headers=["Account Number" , "Name" , "Email" , "Address" , "Phone Number,Account Type"],tablefmt="grid"))
+        print(tabulate(table_data , headers=["Account Number" , "Name" , "Email" , "Address" , "Phone Number","Account Type"],tablefmt="grid"))
     def Create_An_Admin_Account(self,Adminn):
         self.AdminList.append(self,Adminn)
         # self.AdminList[]
